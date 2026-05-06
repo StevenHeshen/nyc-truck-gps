@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "NYC Truck GPS",
+    "slug": "nyc-truck-gps",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.example.nyctruckgps"
+    },
+    "android": {
+      "package": "com.example.nyctruckgps"
+    }
+  }
+}

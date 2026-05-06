@@ -1,0 +1,18 @@
+{
+  "name": "nyc-truck-gps-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "NYC truck-safe navigation MVP: Expo mobile app + Express backend.",
+  "scripts": {
+    "dev": "npm run dev:backend",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:mobile": "npm --prefix mobile run start",
+    "install:all": "npm install && npm --prefix backend install && npm --prefix mobile install",
+    "typecheck": "npm --prefix mobile run typecheck && npm --prefix backend run typecheck"
+  },
+  "workspaces": [
+    "backend",
+    "mobile",
+    "shared"
+  ]
+}
