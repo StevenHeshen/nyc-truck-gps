@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
-import MapView, { Polyline, Region } from "react-native-maps";
+import MapView, { Marker, Polyline, Region } from "react-native-maps";
 import { TruckRouteOption, TruckRouteSegment } from "@nyc-truck-gps/shared";
 import { colors } from "../theme/colors";
 import { useLanguage } from "../i18n";
@@ -21,6 +21,8 @@ const NYC_REGION: Region = {
 
 export function MapPreview({ origin, destination, route }: Props) {
   const { t, td } = useLanguage();
+  const mapRef = useRef<MapView>(null);
+  const regionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [segments, setSegments] = useState<TruckRouteSegment[]>([]);
   const [loading, setLoading] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
@@ -40,6 +42,18 @@ export function MapPreview({ origin, destination, route }: Props) {
 
   useEffect(() => { void loadRegion(NYC_REGION); }, [loadRegion]);
 
+  useEffect(() => {
+    if (!route?.geometry?.length) return;
+    mapRef.current?.fitToCoordinates(route.geometry, {
+      edgePadding: { top: 70, right: 35, bottom: 120, left: 35 },
+      animated: true
+    });
+  }, [route]);
+
+  useEffect(() => () => {
+    if (regionTimer.current) clearTimeout(regionTimer.current);
+  }, []);
+
   const officialLines = useMemo(() => segments.flatMap((segment) =>
     segment.geometry.coordinates.map((line, index) => ({
       key: `${segment.id}-${index}`,
@@ -51,9 +65,13 @@ export function MapPreview({ origin, destination, route }: Props) {
   return (
     <View style={styles.container}>
       <MapView
+        ref={mapRef}
         style={styles.map}
         initialRegion={NYC_REGION}
-        onRegionChangeComplete={(region) => { void loadRegion(region); }}
+        onRegionChangeComplete={(region) => {
+          if (regionTimer.current) clearTimeout(regionTimer.current);
+          regionTimer.current = setTimeout(() => { void loadRegion(region); }, 450);
+        }}
         loadingEnabled
       >
         {officialLines.map((line) => (
@@ -65,6 +83,8 @@ export function MapPreview({ origin, destination, route }: Props) {
           />
         ))}
         {route?.geometry?.length ? <Polyline coordinates={route.geometry} strokeColor={colors.primary} strokeWidth={6} /> : null}
+        {route?.geometry?.length ? <Marker coordinate={route.geometry[0]} title={origin} pinColor="#16A34A" /> : null}
+        {route?.geometry?.length ? <Marker coordinate={route.geometry[route.geometry.length - 1]} title={destination} pinColor="#DC2626" /> : null}
       </MapView>
 
       <View style={styles.legend}>

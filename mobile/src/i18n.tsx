@@ -22,7 +22,10 @@ const dictionaries: Record<Language, Dictionary> = {
     useful: "drivers found this useful", pending_review: "Pending", verified: "Verified", recent: "Recent",
     box_truck: "Box truck", semi: "Semi", cargo_van: "Cargo van", dump_truck: "Dump truck", tractor_trailer: "Tractor-trailer",
     apiError: "Connection error", language: "Language", source: "Source", demo: "Demo data", official: "Official data", community: "Community data",
-    officialSegments: "official segments", officialMapUnavailable: "Official truck-route layer is unavailable. The selected route remains demonstration data."
+    officialSegments: "official segments", officialMapUnavailable: "Official truck-route layer is unavailable. The selected route remains demonstration data.",
+    routeProvider: "Route engine", demoProvider: "Demonstration", valhallaProvider: "Valhalla truck routing", aiAdvisory: "AI explanation",
+    addressNotFoundTitle: "Address not found", addressNotFoundBody: "Enter a complete NYC street address with house number, borough, state, and ZIP code.",
+    deterministicRouteTitle: "Truck route calculated", validationPendingBody: "The route uses your vehicle dimensions and weight. Corridor-specific NYC restriction matching is still being added; follow all posted signs."
   },
   zh: {
     subtitle: "帮助纽约货车司机安全出行", route: "路线", vehicle: "车辆", reports: "上报",
@@ -37,7 +40,10 @@ const dictionaries: Record<Language, Dictionary> = {
     latestReports: "社区最新上报", submitted: "已提交", submittedBody: "你的上报正在等待审核。", useful: "位司机认为有帮助",
     pending_review: "待审核", verified: "已核实", recent: "最新", box_truck: "厢式货车", semi: "半挂车", cargo_van: "货运面包车",
     dump_truck: "自卸卡车", tractor_trailer: "牵引挂车", apiError: "连接错误", language: "语言", source: "来源", demo: "演示数据", official: "官方数据", community: "社区数据",
-    officialSegments: "条官方路段", officialMapUnavailable: "官方货车路线图层暂时不可用；所选路线仍为演示数据。"
+    officialSegments: "条官方路段", officialMapUnavailable: "官方货车路线图层暂时不可用；所选路线仍为演示数据。",
+    routeProvider: "路线引擎", demoProvider: "演示数据", valhallaProvider: "Valhalla 货车路由", aiAdvisory: "AI 路线解释",
+    addressNotFoundTitle: "无法识别地址", addressNotFoundBody: "请输入完整的纽约市街道地址，包括门牌号、行政区、州和邮编。",
+    deterministicRouteTitle: "货车路线已计算", validationPendingBody: "路线已使用车辆尺寸和重量。针对当前路线的 NYC 限制匹配仍在完善中，请务必遵守现场标志。"
   },
   es: {
     subtitle: "Rutas más seguras para camioneros de NYC", route: "Ruta", vehicle: "Vehículo", reports: "Reportes",
@@ -55,7 +61,10 @@ const dictionaries: Record<Language, Dictionary> = {
     useful: "conductores lo encontraron útil", pending_review: "Pendiente", verified: "Verificado", recent: "Reciente",
     box_truck: "Camión de caja", semi: "Semirremolque", cargo_van: "Furgoneta de carga", dump_truck: "Camión volquete", tractor_trailer: "Tractocamión",
     apiError: "Error de conexión", language: "Idioma", source: "Fuente", demo: "Datos de demostración", official: "Datos oficiales", community: "Datos comunitarios",
-    officialSegments: "segmentos oficiales", officialMapUnavailable: "La capa oficial no está disponible. La ruta seleccionada sigue siendo de demostración."
+    officialSegments: "segmentos oficiales", officialMapUnavailable: "La capa oficial no está disponible. La ruta seleccionada sigue siendo de demostración.",
+    routeProvider: "Motor de ruta", demoProvider: "Demostración", valhallaProvider: "Rutas de camiones Valhalla", aiAdvisory: "Explicación de IA",
+    addressNotFoundTitle: "Dirección no encontrada", addressNotFoundBody: "Ingrese una dirección completa de NYC con número, distrito, estado y código postal.",
+    deterministicRouteTitle: "Ruta de camión calculada", validationPendingBody: "La ruta usa las dimensiones y el peso del vehículo. La validación específica del corredor aún está en desarrollo; siga las señales."
   }
 };
 

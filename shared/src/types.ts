@@ -103,7 +103,14 @@ export interface TruckRouteOption {
 export interface RouteRequest {
   origin: string;
   destination: string;
+  originCoordinate?: Coordinate;
+  destinationCoordinate?: Coordinate;
   vehicle: VehicleProfile;
+}
+
+export interface Coordinate {
+  latitude: number;
+  longitude: number;
 }
 
 export interface RouteResponse {
@@ -119,6 +126,8 @@ export interface RouteResponse {
     danger: number;
   };
   disclaimer: string;
+  routeProvider: "demo" | "valhalla";
+  aiAdvisory?: string;
 }
 
 export interface DriverReport {

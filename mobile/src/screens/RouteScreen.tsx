@@ -6,7 +6,7 @@ import { FormInput } from "../components/FormInput";
 import { MapPreview } from "../components/MapPreview";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { RiskBadge } from "../components/RiskBadge";
-import { fetchTruckRoute } from "../services/api";
+import { ApiError, fetchTruckRoute } from "../services/api";
 import { buildLocalFallbackRoute } from "../services/localFallback";
 import { colors } from "../theme/colors";
 import { useLanguage } from "../i18n";
@@ -17,8 +17,8 @@ interface Props {
 
 export function RouteScreen({ vehicle }: Props) {
   const { t, td, language } = useLanguage();
-  const [origin, setOrigin] = useState("Flushing, Queens");
-  const [destination, setDestination] = useState("Sunset Park, Brooklyn");
+  const [origin, setOrigin] = useState("123-01 Roosevelt Ave, Queens, NY 11368");
+  const [destination, setDestination] = useState("220 36th St, Brooklyn, NY 11232");
   const [response, setResponse] = useState<RouteResponse | null>(null);
   const [selectedRouteId, setSelectedRouteId] = useState<TruckRouteOption["id"]>("safe");
   const [loading, setLoading] = useState(false);
@@ -33,6 +33,11 @@ export function RouteScreen({ vehicle }: Props) {
       setResponse(result);
       setSelectedRouteId(result.recommendedRouteId);
     } catch (error) {
+      if (error instanceof ApiError && error.code === "address_not_found") {
+        setResponse(null);
+        Alert.alert(t("addressNotFoundTitle"), t("addressNotFoundBody"));
+        return;
+      }
       const fallback = buildLocalFallbackRoute(payload);
       setResponse(fallback);
       setSelectedRouteId(fallback.recommendedRouteId);
@@ -61,11 +66,26 @@ export function RouteScreen({ vehicle }: Props) {
 
       {response ? (
         <>
-          <View style={styles.summaryRow}>
-            <SummaryCard label={t("danger")} value={response.summary.danger} tone="danger" />
-            <SummaryCard label={t("warning")} value={response.summary.warning} tone="warning" />
-            <SummaryCard label={t("safe")} value={response.summary.safe} tone="safe" />
-          </View>
+          {response.routeProvider === "demo" ? (
+            <View style={styles.summaryRow}>
+              <SummaryCard label={t("danger")} value={response.summary.danger} tone="danger" />
+              <SummaryCard label={t("warning")} value={response.summary.warning} tone="warning" />
+              <SummaryCard label={t("safe")} value={response.summary.safe} tone="safe" />
+            </View>
+          ) : (
+            <Card style={styles.validationCard}>
+              <Text style={styles.riskTitle}>{t("deterministicRouteTitle")}</Text>
+              <Text style={styles.description}>{t("validationPendingBody")}</Text>
+            </Card>
+          )}
+          <Text style={styles.provider}>{t("routeProvider")}: {response.routeProvider === "valhalla" ? t("valhallaProvider") : t("demoProvider")}</Text>
+
+          {response.aiAdvisory ? (
+            <Card style={styles.advisoryCard}>
+              <Text style={styles.riskTitle}>{t("aiAdvisory")}</Text>
+              <Text style={styles.description}>{response.aiAdvisory}</Text>
+            </Card>
+          ) : null}
 
           <Text style={styles.sectionTitle}>{t("routeOptions")}</Text>
           {response.routes.map((route) => (
@@ -81,7 +101,7 @@ export function RouteScreen({ vehicle }: Props) {
             </Pressable>
           ))}
 
-          <Text style={styles.sectionTitle}>{t("riskChecks")}</Text>
+          {response.restrictions.length ? <Text style={styles.sectionTitle}>{t("riskChecks")}</Text> : null}
           {response.restrictions.map((restriction, index) => (
             <Card key={`${restriction.id}-${index}`} style={styles.riskCard}>
               <View style={styles.rowBetween}>
@@ -149,6 +169,9 @@ const styles = StyleSheet.create({
   description: { color: colors.text, marginTop: 8, lineHeight: 20 },
   riskCard: { marginBottom: 10 },
   riskTitle: { color: colors.text, fontSize: 16, fontWeight: "900", flex: 1 },
+  provider: { color: colors.muted, fontSize: 12, fontWeight: "700", marginBottom: 8 },
+  advisoryCard: { marginBottom: 10, borderColor: colors.primary, borderWidth: 1 },
+  validationCard: { marginBottom: 12, borderColor: colors.warning, borderWidth: 1 },
   source: { color: colors.muted, fontSize: 11, marginTop: 8 },
   disclaimer: { color: colors.muted, fontSize: 12, lineHeight: 18, marginTop: 8 }
 });
