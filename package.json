@@ -8,7 +8,8 @@
     "dev:backend": "npm --prefix backend run dev",
     "dev:mobile": "npm --prefix mobile run start",
     "install:all": "npm install && npm --prefix backend install && npm --prefix mobile install",
-    "typecheck": "npm --prefix mobile run typecheck && npm --prefix backend run typecheck"
+    "typecheck": "npm --prefix mobile run typecheck && npm --prefix backend run typecheck",
+    "test": "npm --prefix backend test"
   },
   "workspaces": [
     "backend",

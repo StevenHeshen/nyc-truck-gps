@@ -15,6 +15,15 @@ export type RoadRestrictionType =
 
 export type Severity = "safe" | "warning" | "danger";
 
+export type DataSourceKind = "demo" | "official" | "community";
+
+export interface DataSourceMetadata {
+  kind: DataSourceKind;
+  name: string;
+  url: string;
+  updatedAt?: string;
+}
+
 export interface VehicleProfile {
   id: string;
   name: string;
@@ -43,6 +52,34 @@ export interface RestrictionPoint {
   maxWeightLbs?: number;
   commercialVehicleProhibited?: boolean;
   hazmatProhibited?: boolean;
+  source: DataSourceMetadata;
+}
+
+export interface TruckRouteSegment {
+  id: string;
+  street: string;
+  borough: string;
+  routeType: "Local" | "Through" | "Unknown";
+  regulation?: string;
+  geometry: {
+    type: "MultiLineString";
+    coordinates: number[][][];
+  };
+  source: DataSourceMetadata;
+}
+
+export interface TruckRouteDatasetResponse {
+  ok: true;
+  count: number;
+  cached: boolean;
+  source: {
+    datasetId: string;
+    name: string;
+    url: string;
+    apiUrl: string;
+  };
+  routes: TruckRouteSegment[];
+  disclaimer: string;
 }
 
 export interface AnalyzedRestriction extends RestrictionPoint {

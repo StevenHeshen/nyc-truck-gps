@@ -30,11 +30,6 @@ export function analyzeRestriction(vehicle: VehicleProfile, restriction: Restric
         reason: `Your truck height ${formatHeight(heightInches)} is at or above the clearance ${formatHeight(clearance)}.`
       };
     }
-    return {
-      ...restriction,
-      computedSeverity: "safe",
-      reason: `Your truck height ${formatHeight(heightInches)} is below the clearance ${formatHeight(clearance)}.`
-    };
   }
 
   if (restriction.type === "bridge" && restriction.maxWeightLbs !== undefined) {
@@ -65,6 +60,15 @@ export function analyzeRestriction(vehicle: VehicleProfile, restriction: Restric
       ...restriction,
       computedSeverity: "danger",
       reason: "Commercial vehicle restriction applies to this road segment."
+    };
+  }
+
+  if (restriction.type === "low_clearance" && restriction.clearanceFt !== undefined) {
+    const clearance = restriction.clearanceFt * 12 + (restriction.clearanceIn ?? 0);
+    return {
+      ...restriction,
+      computedSeverity: "safe",
+      reason: `Your truck height ${formatHeight(heightInches)} is below the clearance ${formatHeight(clearance)}.`
     };
   }
 

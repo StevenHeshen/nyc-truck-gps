@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { createReportSchema } from "../services/validation";
 
 const router = Router();
 
@@ -40,11 +41,15 @@ router.get("/", (_req, res) => {
 });
 
 router.post("/", (req, res) => {
+  const parsed = createReportSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: "Invalid report", details: parsed.error.flatten() });
   const newReport = {
     id: `report_${Date.now()}`,
-    type: req.body.type || "Unknown",
-    location: req.body.location || "Unknown location",
-    note: req.body.note || "",
+    type: parsed.data.type,
+    location: parsed.data.location,
+    note: parsed.data.note,
+    latitude: parsed.data.latitude,
+    longitude: parsed.data.longitude,
     status: "pending_review",
     votes: 0,
     createdAt: new Date().toISOString()

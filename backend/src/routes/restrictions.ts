@@ -1,88 +1,58 @@
 import { Router } from "express";
+import { mockRestrictions } from "@nyc-truck-gps/shared";
+import { fetchOfficialTruckRoutes, officialTruckRouteSource } from "../services/officialTruckRoutes";
 
 const router = Router();
 
-const restrictions = [
-  {
-    id: "restriction_1",
-    type: "low_clearance",
-    title: "Low Clearance Bridge",
-    location: "FDR Drive near E 96th St",
-    borough: "Manhattan",
-    clearanceFt: 10,
-    clearanceIn: 6,
-    severity: "danger",
-    note: "Commercial vehicles should avoid this area."
-  },
-  {
-    id: "restriction_2",
-    type: "parkway",
-    title: "Parkway Restriction",
-    location: "Jackie Robinson Parkway",
-    borough: "Queens / Brooklyn",
-    severity: "danger",
-    note: "NYC parkways generally prohibit commercial vehicles."
-  },
-  {
-    id: "restriction_3",
-    type: "tunnel",
-    title: "Tunnel Restriction Check",
-    location: "Holland Tunnel",
-    borough: "Manhattan / NJ",
-    severity: "warning",
-    note: "Check vehicle type, cargo, height, and hazardous material restrictions before entering."
-  },
-  {
-    id: "restriction_4",
-    type: "truck_route",
-    title: "Preferred Truck Route",
-    location: "Bruckner Blvd / Major Deegan corridor",
-    borough: "Bronx",
-    severity: "safe",
-    note: "Route segment is commonly used by commercial vehicles."
-  },
-  {
-    id: "restriction_5",
-    type: "bridge",
-    title: "Bridge Weight Review",
-    location: "Brooklyn Bridge approach",
-    borough: "Manhattan / Brooklyn",
-    maxWeightLbs: 24000,
-    severity: "warning",
-    note: "Vehicle weight may exceed preferred bridge threshold."
-  },
-  {
-    id: "restriction_6",
-    type: "construction",
-    title: "Reported Construction",
-    location: "Atlantic Ave near 3rd Ave",
-    borough: "Brooklyn",
-    severity: "warning",
-    note: "Community report: lane closure may make right turns difficult."
+router.get("/truck-routes", async (req, res) => {
+  const requestedLimit = Number(req.query.limit ?? 500);
+  const limit = Number.isInteger(requestedLimit) ? Math.min(Math.max(requestedLimit, 1), 2_000) : 500;
+  const borough = typeof req.query.borough === "string" ? req.query.borough : undefined;
+  const bounds = parseBounds(req.query);
+  if (bounds === null) return res.status(400).json({ ok: false, error: "Invalid map bounds" });
+
+  try {
+    const result = await fetchOfficialTruckRoutes({ borough, bounds, limit });
+    return res.json({
+      ok: true,
+      count: result.segments.length,
+      cached: result.cached,
+      source: officialTruckRouteSource,
+      routes: result.segments,
+      disclaimer: "Official truck-route centerlines are reference data, not a turn-by-turn route. Always follow posted signs and current traffic rules."
+    });
+  } catch (error) {
+    return res.status(502).json({
+      ok: false,
+      error: "Official truck-route data is temporarily unavailable",
+      source: officialTruckRouteSource,
+      detail: error instanceof Error ? error.message : "Unknown upstream error"
+    });
   }
-];
+});
 
 router.get("/", (req, res) => {
-  const type = req.query.type as string | undefined;
-  const borough = req.query.borough as string | undefined;
+  const type = typeof req.query.type === "string" ? req.query.type : undefined;
+  const borough = typeof req.query.borough === "string" ? req.query.borough : undefined;
+  let result = mockRestrictions;
 
-  let result = restrictions;
+  if (type) result = result.filter((item) => item.type === type);
+  if (borough) result = result.filter((item) => item.borough.toLowerCase().includes(borough.toLowerCase()));
 
-  if (type) {
-    result = result.filter((item) => item.type === type);
-  }
-
-  if (borough) {
-    result = result.filter((item) =>
-      item.borough.toLowerCase().includes(borough.toLowerCase())
-    );
-  }
-
-  res.json({
-    ok: true,
-    count: result.length,
-    restrictions: result
-  });
+  res.json({ ok: true, count: result.length, restrictions: result });
 });
 
 export default router;
+
+function parseBounds(query: Record<string, unknown>) {
+  const keys = ["north", "west", "south", "east"] as const;
+  const supplied = keys.filter((key) => query[key] !== undefined);
+  if (supplied.length === 0) return undefined;
+  if (supplied.length !== keys.length) return null;
+
+  const values = Object.fromEntries(keys.map((key) => [key, Number(query[key])])) as Record<(typeof keys)[number], number>;
+  if (keys.some((key) => !Number.isFinite(values[key]))) return null;
+  if (values.north <= values.south || values.east <= values.west) return null;
+  if (values.north > 90 || values.south < -90 || values.east > 180 || values.west < -180) return null;
+  return values;
+}

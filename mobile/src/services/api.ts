@@ -1,5 +1,5 @@
 import { API_BASE_URL } from "../config";
-import { DriverReport, RouteRequest, RouteResponse } from "@nyc-truck-gps/shared";
+import { DriverReport, RouteRequest, RouteResponse, TruckRouteDatasetResponse } from "@nyc-truck-gps/shared";
 
 async function requestJson<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
@@ -31,4 +31,15 @@ export function createReport(payload: Pick<DriverReport, "type" | "location" | "
     method: "POST",
     body: JSON.stringify(payload)
   });
+}
+
+export function fetchOfficialTruckRoutes(bounds: { north: number; west: number; south: number; east: number }) {
+  const params = new URLSearchParams({
+    north: String(bounds.north),
+    west: String(bounds.west),
+    south: String(bounds.south),
+    east: String(bounds.east),
+    limit: "2000"
+  });
+  return requestJson<TruckRouteDatasetResponse>(`/api/restrictions/truck-routes?${params}`);
 }

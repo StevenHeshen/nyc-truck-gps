@@ -6,8 +6,10 @@ import { FormInput } from "../components/FormInput";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { createReport, fetchReports } from "../services/api";
 import { colors } from "../theme/colors";
+import { useLanguage } from "../i18n";
 
 export function ReportsScreen() {
+  const { t } = useLanguage();
   const [type, setType] = useState("Hard right turn");
   const [location, setLocation] = useState("Atlantic Ave near 3rd Ave");
   const [note, setNote] = useState("Box truck turning is difficult because of construction cones.");
@@ -20,7 +22,7 @@ export function ReportsScreen() {
       const result = await fetchReports();
       setReports(result.reports);
     } catch (error) {
-      Alert.alert("API error", error instanceof Error ? error.message : "Could not load reports");
+      Alert.alert(t("apiError"), error instanceof Error ? error.message : t("apiError"));
     } finally {
       setLoading(false);
     }
@@ -30,9 +32,9 @@ export function ReportsScreen() {
     try {
       const result = await createReport({ type, location, note });
       setReports((prev) => [result.report, ...prev]);
-      Alert.alert("已提交", "你的上报已进入 pending review。真实产品里可以加照片、GPS 和司机投票。");
+      Alert.alert(t("submitted"), t("submittedBody"));
     } catch (error) {
-      Alert.alert("API error", error instanceof Error ? error.message : "Could not submit report");
+      Alert.alert(t("apiError"), error instanceof Error ? error.message : t("apiError"));
     }
   }
 
@@ -43,35 +45,29 @@ export function ReportsScreen() {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Card style={styles.form}>
-        <Text style={styles.title}>司机上报</Text>
-        <FormInput label="问题类型" value={type} onChangeText={setType} />
-        <FormInput label="位置" value={location} onChangeText={setLocation} />
-        <FormInput label="说明" value={note} onChangeText={setNote} multiline style={{ minHeight: 90, textAlignVertical: "top" }} />
-        <PrimaryButton title="提交上报" onPress={submit} />
-        <PrimaryButton title="刷新社区上报" variant="secondary" onPress={loadReports} />
+        <Text style={styles.title}>{t("driverReports")}</Text>
+        <FormInput label={t("issueType")} value={type} onChangeText={setType} />
+        <FormInput label={t("location")} value={location} onChangeText={setLocation} />
+        <FormInput label={t("details")} value={note} onChangeText={setNote} multiline style={{ minHeight: 90, textAlignVertical: "top" }} />
+        <PrimaryButton title={t("submitReport")} onPress={submit} />
+        <PrimaryButton title={t("refreshReports")} variant="secondary" onPress={loadReports} />
       </Card>
 
-      <Text style={styles.sectionTitle}>社区最新上报</Text>
+      <Text style={styles.sectionTitle}>{t("latestReports")}</Text>
       {loading ? <ActivityIndicator /> : null}
       {reports.map((report) => (
         <Card key={report.id} style={styles.reportCard}>
           <View style={styles.rowBetween}>
             <Text style={styles.reportType}>{report.type}</Text>
-            <Text style={styles.status}>{statusText(report.status)}</Text>
+            <Text style={styles.status}>{t(report.status)}</Text>
           </View>
           <Text style={styles.muted}>{report.location}</Text>
           <Text style={styles.note}>{report.note}</Text>
-          <Text style={styles.muted}>{report.votes} drivers found this useful</Text>
+          <Text style={styles.muted}>{report.votes} {t("useful")}</Text>
         </Card>
       ))}
     </ScrollView>
   );
-}
-
-function statusText(status: DriverReport["status"]) {
-  if (status === "pending_review") return "Pending";
-  if (status === "verified") return "Verified";
-  return "Recent";
 }
 
 const styles = StyleSheet.create({

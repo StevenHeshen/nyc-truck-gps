@@ -9,12 +9,14 @@ import { RiskBadge } from "../components/RiskBadge";
 import { fetchTruckRoute } from "../services/api";
 import { buildLocalFallbackRoute } from "../services/localFallback";
 import { colors } from "../theme/colors";
+import { useLanguage } from "../i18n";
 
 interface Props {
   vehicle: VehicleProfile;
 }
 
 export function RouteScreen({ vehicle }: Props) {
+  const { t, td, language } = useLanguage();
   const [origin, setOrigin] = useState("Flushing, Queens");
   const [destination, setDestination] = useState("Sunset Park, Brooklyn");
   const [response, setResponse] = useState<RouteResponse | null>(null);
@@ -34,7 +36,7 @@ export function RouteScreen({ vehicle }: Props) {
       const fallback = buildLocalFallbackRoute(payload);
       setResponse(fallback);
       setSelectedRouteId(fallback.recommendedRouteId);
-      Alert.alert("使用本地演示数据", "后端 API 没有连接成功，当前显示手机端本地 mock 路线。运行 backend 后可调用真实 API。", [{ text: "OK" }]);
+      Alert.alert(t("localDataTitle"), t("localDataBody"), [{ text: "OK" }]);
     } finally {
       setLoading(false);
     }
@@ -43,15 +45,15 @@ export function RouteScreen({ vehicle }: Props) {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Card style={styles.section}>
-        <Text style={styles.title}>生成货车路线</Text>
-        <FormInput label="起点" value={origin} onChangeText={setOrigin} />
-        <FormInput label="终点" value={destination} onChangeText={setDestination} />
+        <Text style={styles.title}>{t("generateRoute")}</Text>
+        <FormInput label={t("origin")} value={origin} onChangeText={setOrigin} />
+        <FormInput label={t("destination")} value={destination} onChangeText={setDestination} />
         <View style={styles.vehicleBox}>
-          <Text style={styles.caption}>当前车辆</Text>
+          <Text style={styles.caption}>{t("currentVehicle")}</Text>
           <Text style={styles.vehicleName}>{vehicle.name}</Text>
-          <Text style={styles.muted}>高 {vehicle.heightFt}'{vehicle.heightIn}" · 重 {vehicle.weightLbs.toLocaleString()} lb · {vehicle.type}</Text>
+          <Text style={styles.muted}>{t("height")} {vehicle.heightFt}'{vehicle.heightIn}" · {t("weight")} {vehicle.weightLbs.toLocaleString()} lb · {t(vehicle.type)}</Text>
         </View>
-        <PrimaryButton title={loading ? "正在生成..." : "生成 Truck-safe 路线"} onPress={generateRoute} disabled={loading} />
+        <PrimaryButton title={loading ? t("generating") : t("generateTruckRoute")} onPress={generateRoute} disabled={loading} />
         {loading ? <ActivityIndicator style={{ marginTop: 12 }} /> : null}
       </Card>
 
@@ -60,47 +62,58 @@ export function RouteScreen({ vehicle }: Props) {
       {response ? (
         <>
           <View style={styles.summaryRow}>
-            <SummaryCard label="危险" value={response.summary.danger} tone="danger" />
-            <SummaryCard label="提醒" value={response.summary.warning} tone="warning" />
-            <SummaryCard label="安全" value={response.summary.safe} tone="safe" />
+            <SummaryCard label={t("danger")} value={response.summary.danger} tone="danger" />
+            <SummaryCard label={t("warning")} value={response.summary.warning} tone="warning" />
+            <SummaryCard label={t("safe")} value={response.summary.safe} tone="safe" />
           </View>
 
-          <Text style={styles.sectionTitle}>路线选择</Text>
+          <Text style={styles.sectionTitle}>{t("routeOptions")}</Text>
           {response.routes.map((route) => (
             <Pressable key={route.id} onPress={() => setSelectedRouteId(route.id)}>
               <Card style={[styles.routeCard, selectedRouteId === route.id && styles.selectedCard]}>
                 <View style={styles.rowBetween}>
-                  <Text style={styles.routeName}>{route.name}</Text>
+                  <Text style={styles.routeName}>{td(route.name)}</Text>
                   <Text style={styles.compliance}>{route.compliance}</Text>
                 </View>
                 <Text style={styles.muted}>{route.etaMinutes} min · {route.distanceMiles} mi · toll ${route.tollEstimateUsd}</Text>
-                <Text style={styles.description}>{route.description}</Text>
+                <Text style={styles.description}>{td(route.description)}</Text>
               </Card>
             </Pressable>
           ))}
 
-          <Text style={styles.sectionTitle}>风险检测</Text>
-          {(response.restrictions ?? response.routes?.flatMap((route) => route.risks ?? []) ?? []).map((restriction, index) => (
+          <Text style={styles.sectionTitle}>{t("riskChecks")}</Text>
+          {response.restrictions.map((restriction, index) => (
             <Card key={`${restriction.id}-${index}`} style={styles.riskCard}>
               <View style={styles.rowBetween}>
-                <Text style={styles.riskTitle}>{restriction.title}</Text>
+                <Text style={styles.riskTitle}>{td(restriction.title)}</Text>
                 <RiskBadge severity={restriction.computedSeverity} />
               </View>
               <Text style={styles.muted}>{restriction.location} · {restriction.borough}</Text>
-              <Text style={styles.description}>{restriction.reason}</Text>
-              <Text style={styles.description}>{restriction.note}</Text>
+              <Text style={styles.description}>{localizeReason(restriction.reason, language)}</Text>
+              <Text style={styles.description}>{td(restriction.note)}</Text>
+              <Text style={styles.source}>{t("source")}: {t(restriction.source.kind)} · {restriction.source.name}</Text>
             </Card>
           ))}
 
-          <Text style={styles.disclaimer}>{response.disclaimer}</Text>
+          <Text style={styles.disclaimer}>{td(response.disclaimer)}</Text>
         </>
       ) : (
         <Card>
-          <Text style={styles.muted}>点击“生成 Truck-safe 路线”后，这里会显示路线、风险和合规分析。</Text>
+          <Text style={styles.muted}>{t("emptyRoute")}</Text>
         </Card>
       )}
     </ScrollView>
   );
+}
+
+function localizeReason(reason: string, language: "en" | "zh" | "es") {
+  if (language === "en") return reason;
+  if (reason.includes("at or above the clearance")) return language === "zh" ? "车辆高度达到或超过该处限高，存在碰撞危险。" : "La altura del vehículo alcanza o supera el límite; existe peligro de choque.";
+  if (reason.includes("below the clearance")) return language === "zh" ? "车辆高度低于演示限高值；仍须遵守现场标志。" : "La altura está por debajo del límite de demostración; siga siempre las señales.";
+  if (reason.includes("GVW") && reason.includes("exceeds")) return language === "zh" ? "车辆总重超过该桥梁的演示限重。" : "El peso bruto excede el límite de demostración del puente.";
+  if (reason.includes("Hazmat")) return language === "zh" ? "该隧道的演示数据标记为禁止危险品。" : "Los datos de demostración indican que el túnel prohíbe materiales peligrosos.";
+  if (reason.includes("Commercial vehicle restriction")) return language === "zh" ? "该路段限制商用车辆通行。" : "Este tramo restringe el paso de vehículos comerciales.";
+  return language === "zh" ? "演示分析未发现与当前车辆直接冲突；请确认现场标志。" : "El análisis de demostración no encontró un conflicto directo; confirme las señales.";
 }
 
 function SummaryCard({ label, value, tone }: { label: string; value: number; tone: "danger" | "warning" | "safe" }) {
@@ -136,5 +149,6 @@ const styles = StyleSheet.create({
   description: { color: colors.text, marginTop: 8, lineHeight: 20 },
   riskCard: { marginBottom: 10 },
   riskTitle: { color: colors.text, fontSize: 16, fontWeight: "900", flex: 1 },
+  source: { color: colors.muted, fontSize: 11, marginTop: 8 },
   disclaimer: { color: colors.muted, fontSize: 12, lineHeight: 18, marginTop: 8 }
 });
