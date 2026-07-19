@@ -2,10 +2,12 @@ import React from "react";
 import { StyleSheet, Text } from "react-native";
 import { Severity } from "@nyc-truck-gps/shared";
 import { colors } from "../theme/colors";
+import { useLanguage } from "../i18n";
 
 export function RiskBadge({ severity }: { severity: Severity }) {
+  const { t } = useLanguage();
   const style = severity === "danger" ? styles.danger : severity === "warning" ? styles.warning : styles.safe;
-  const text = severity === "danger" ? "危险" : severity === "warning" ? "提醒" : "安全";
+  const text = t(severity);
   return <Text style={[styles.badge, style]}>{text}</Text>;
 }
 

@@ -6,6 +6,7 @@ import { Card } from "../components/Card";
 import { FormInput } from "../components/FormInput";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { colors } from "../theme/colors";
+import { useLanguage } from "../i18n";
 
 interface Props {
   vehicle: VehicleProfile;
@@ -15,6 +16,7 @@ interface Props {
 const vehicleTypes: VehicleType[] = ["box_truck", "semi", "cargo_van", "dump_truck", "tractor_trailer"];
 
 export function VehicleScreen({ vehicle, onSave }: Props) {
+  const { t } = useLanguage();
   const [draft, setDraft] = useState({ ...vehicle });
 
   function update<K extends keyof VehicleProfile>(key: K, value: VehicleProfile[K]) {
@@ -24,16 +26,16 @@ export function VehicleScreen({ vehicle, onSave }: Props) {
   async function save() {
     await AsyncStorage.setItem("vehicleProfile", JSON.stringify(draft));
     onSave(draft);
-    Alert.alert("已保存", "车辆档案已经保存到本机。用真实账号系统后可以保存到云端。");
+    Alert.alert(t("saved"), t("savedBody"));
   }
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <Card style={styles.form}>
-        <Text style={styles.title}>车辆档案</Text>
-        <FormInput label="车辆名称" value={draft.name} onChangeText={(text) => update("name", text)} />
+        <Text style={styles.title}>{t("vehicleProfile")}</Text>
+        <FormInput label={t("vehicleName")} value={draft.name} onChangeText={(text) => update("name", text)} />
 
-        <Text style={styles.label}>车辆类型</Text>
+        <Text style={styles.label}>{t("vehicleType")}</Text>
         <View style={styles.typeGrid}>
           {vehicleTypes.map((type) => (
             <Text
@@ -41,36 +43,36 @@ export function VehicleScreen({ vehicle, onSave }: Props) {
               onPress={() => update("type", type)}
               style={[styles.typeChip, draft.type === type && styles.typeChipActive]}
             >
-              {type}
+              {t(type)}
             </Text>
           ))}
         </View>
 
         <View style={styles.row}>
-          <View style={styles.flex1}><FormInput label="车高 Feet" value={String(draft.heightFt)} keyboardType="numeric" onChangeText={(text) => update("heightFt", Number(text || 0))} /></View>
-          <View style={styles.flex1}><FormInput label="Inches" suffix="in" value={String(draft.heightIn)} keyboardType="numeric" onChangeText={(text) => update("heightIn", Number(text || 0))} /></View>
+          <View style={styles.flex1}><FormInput label={t("feet")} value={String(draft.heightFt)} keyboardType="numeric" onChangeText={(text) => update("heightFt", Number(text || 0))} /></View>
+          <View style={styles.flex1}><FormInput label={t("inches")} suffix="in" value={String(draft.heightIn)} keyboardType="numeric" onChangeText={(text) => update("heightIn", Number(text || 0))} /></View>
         </View>
-        <FormInput label="重量 GVW" suffix="lb" value={String(draft.weightLbs)} keyboardType="numeric" onChangeText={(text) => update("weightLbs", Number(text || 0))} />
+        <FormInput label={t("gvw")} suffix="lb" value={String(draft.weightLbs)} keyboardType="numeric" onChangeText={(text) => update("weightLbs", Number(text || 0))} />
         <View style={styles.row}>
-          <View style={styles.flex1}><FormInput label="车长" suffix="ft" value={String(draft.lengthFt)} keyboardType="numeric" onChangeText={(text) => update("lengthFt", Number(text || 0))} /></View>
-          <View style={styles.flex1}><FormInput label="车宽" suffix="ft" value={String(draft.widthFt)} keyboardType="numeric" onChangeText={(text) => update("widthFt", Number(text || 0))} /></View>
+          <View style={styles.flex1}><FormInput label={t("length")} suffix="ft" value={String(draft.lengthFt)} keyboardType="numeric" onChangeText={(text) => update("lengthFt", Number(text || 0))} /></View>
+          <View style={styles.flex1}><FormInput label={t("width")} suffix="ft" value={String(draft.widthFt)} keyboardType="numeric" onChangeText={(text) => update("widthFt", Number(text || 0))} /></View>
         </View>
-        <FormInput label="轴数" value={String(draft.axles)} keyboardType="numeric" onChangeText={(text) => update("axles", Number(text || 0))} />
+        <FormInput label={t("axles")} value={String(draft.axles)} keyboardType="numeric" onChangeText={(text) => update("axles", Number(text || 0))} />
 
         <View style={styles.switchRow}>
           <View>
-            <Text style={styles.switchTitle}>Hazmat / 危险品</Text>
-            <Text style={styles.muted}>打开后会避开危险品限制路线</Text>
+            <Text style={styles.switchTitle}>{t("hazmat")}</Text>
+            <Text style={styles.muted}>{t("hazmatHelp")}</Text>
           </View>
           <Switch value={draft.hasHazmat} onValueChange={(value) => update("hasHazmat", value)} />
         </View>
 
-        <PrimaryButton title="保存车辆档案" onPress={save} />
+        <PrimaryButton title={t("saveVehicle")} onPress={save} />
       </Card>
 
       <Card>
-        <Text style={styles.titleSmall}>上线后建议增加</Text>
-        <Text style={styles.muted}>车牌、DOT number、保险、车队 ID、多车辆档案、司机账号、云端同步。</Text>
+        <Text style={styles.titleSmall}>{t("futureTitle")}</Text>
+        <Text style={styles.muted}>{t("futureBody")}</Text>
       </Card>
     </ScrollView>
   );

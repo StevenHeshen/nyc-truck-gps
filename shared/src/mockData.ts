@@ -1,5 +1,12 @@
 import { DriverReport, RestrictionPoint, TruckRouteOption } from "./types";
 
+const demoSource = {
+  kind: "demo" as const,
+  name: "NYC Truck GPS demonstration data",
+  url: "https://github.com/",
+  updatedAt: "2026-07-19"
+};
+
 export const mockRestrictions: RestrictionPoint[] = [
   {
     id: "restriction_low_fdr_96",
@@ -13,7 +20,8 @@ export const mockRestrictions: RestrictionPoint[] = [
     clearanceIn: 6,
     severity: "danger",
     commercialVehicleProhibited: true,
-    note: "Low-clearance and commercial vehicle risk. Avoid for box trucks and tractor trailers."
+    note: "Low-clearance and commercial vehicle risk. Avoid for box trucks and tractor trailers.",
+    source: demoSource
   },
   {
     id: "restriction_jackie_robinson",
@@ -25,7 +33,8 @@ export const mockRestrictions: RestrictionPoint[] = [
     longitude: -73.8579,
     severity: "danger",
     commercialVehicleProhibited: true,
-    note: "NYC parkways generally prohibit commercial vehicles."
+    note: "NYC parkways generally prohibit commercial vehicles.",
+    source: demoSource
   },
   {
     id: "restriction_holland_tunnel",
@@ -37,7 +46,8 @@ export const mockRestrictions: RestrictionPoint[] = [
     longitude: -74.0213,
     severity: "warning",
     hazmatProhibited: true,
-    note: "Check vehicle type, cargo, height, and hazardous material restrictions before entering."
+    note: "Check vehicle type, cargo, height, and hazardous material restrictions before entering.",
+    source: demoSource
   },
   {
     id: "restriction_bruckner",
@@ -48,7 +58,8 @@ export const mockRestrictions: RestrictionPoint[] = [
     latitude: 40.8076,
     longitude: -73.9129,
     severity: "safe",
-    note: "Route segment is commonly used by commercial vehicles."
+    note: "Route segment is commonly used by commercial vehicles.",
+    source: demoSource
   },
   {
     id: "restriction_brooklyn_bridge_weight",
@@ -60,7 +71,8 @@ export const mockRestrictions: RestrictionPoint[] = [
     longitude: -73.9969,
     maxWeightLbs: 24000,
     severity: "warning",
-    note: "Vehicle weight may exceed preferred bridge threshold. Use truck route alternative."
+    note: "Vehicle weight may exceed preferred bridge threshold. Use truck route alternative.",
+    source: demoSource
   },
   {
     id: "restriction_atlantic_construction",
@@ -71,7 +83,8 @@ export const mockRestrictions: RestrictionPoint[] = [
     latitude: 40.6841,
     longitude: -73.9827,
     severity: "warning",
-    note: "Community report: lane closure may make right turns difficult for box trucks."
+    note: "Community report: lane closure may make right turns difficult for box trucks.",
+    source: { ...demoSource, kind: "community", name: "Demonstration community report" }
   }
 ];
 
