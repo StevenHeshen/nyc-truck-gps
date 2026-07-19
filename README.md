@@ -190,6 +190,44 @@ POST /api/reports
 
 ## 技术路线图
 
+### AI + 确定性货车路由架构
+
+- `VALHALLA_URL` 配置确定性货车路由服务；车辆高度、宽度、长度、重量、轴数和 Hazmat 会转换为 Valhalla `truck` costing 参数。
+- `GEOCODER_URL` 默认使用无需 API key 的美国人口普查局 Geocoder，把完整 NYC 街道地址转换为坐标。
+- `OPENAI_API_KEY` 为可选配置。OpenAI Responses API 只解释已经计算出的路线，不生成或修改路线几何。
+- 配置 Valhalla 后，请求未携带坐标时后端会先解析起终点地址；未配置 Valhalla 时继续返回明确标注的演示路线。
+- OpenAI 不可用时不会影响路线计算，接口只省略 `aiAdvisory`。
+
+### 本地启动 Valhalla
+
+前置条件：安装并启动 Docker（Docker Desktop 或 Colima）。首次启动会下载纽约州 OpenStreetMap PBF 并构建路由图，可能需要较长时间和数 GB 磁盘空间。
+
+```bash
+npm run valhalla:up
+npm run valhalla:logs
+```
+
+日志显示服务启动后，在另一个终端运行真实货车路线冒烟测试：
+
+```bash
+npm run valhalla:check
+```
+
+成功后，在 `backend/.env` 中设置：
+
+```env
+VALHALLA_URL=http://localhost:8002
+GEOCODER_URL=https://geocoding.geo.census.gov/geocoder/locations/onelineaddress
+```
+
+停止服务：
+
+```bash
+npm run valhalla:down
+```
+
+Valhalla 生成的数据保存在 `infra/valhalla/custom_files/`，该目录内容不会提交到 Git。
+
 ### 导航与地图
 
 当前已使用 `react-native-maps` 展示 NYC DOT 官方货车路线中心线。逐向导航仍需接入货车路由引擎，可评估：

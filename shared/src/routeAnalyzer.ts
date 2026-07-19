@@ -120,6 +120,7 @@ export function buildTruckRouteResponse(request: RouteRequest): RouteResponse {
     routes,
     restrictions,
     summary,
+    routeProvider: "demo",
     disclaimer:
       "Routes and restrictions are for planning assistance only. Drivers must follow posted signs and official agency rules."
   };

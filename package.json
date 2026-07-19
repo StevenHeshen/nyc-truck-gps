@@ -7,6 +7,10 @@
     "dev": "npm run dev:backend",
     "dev:backend": "npm --prefix backend run dev",
     "dev:mobile": "npm --prefix mobile run start",
+    "valhalla:up": "docker-compose -f infra/valhalla/compose.yml up -d",
+    "valhalla:logs": "docker-compose -f infra/valhalla/compose.yml logs -f valhalla",
+    "valhalla:down": "docker-compose -f infra/valhalla/compose.yml down",
+    "valhalla:check": "node scripts/check-valhalla.mjs",
     "install:all": "npm install && npm --prefix backend install && npm --prefix mobile install",
     "typecheck": "npm --prefix mobile run typecheck && npm --prefix backend run typecheck",
     "test": "npm --prefix backend test"
